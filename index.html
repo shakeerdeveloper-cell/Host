@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TV Receiver</title>
+    <style>
+        body { background: black; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        video { width: 100vw; height: 100vh; object-fit: contain; }
+    </style>
+</head>
+<body>
+    <video id="mainPlayer" controls autoplay></video>
+
+    <script>
+        const video = document.getElementById('mainPlayer');
+        
+        // REPLACE WITH YOUR RENDER URL
+        const ws = new WebSocket('wss://http://10.21.139.24:8080');
+
+        ws.onmessage = (event) => {
+            const data = event.data;
+            
+            if (data.startsWith('http')) {
+                // The TV natively buffers this link perfectly!
+                video.src = data; 
+                video.play();
+            } else if (data === 'PLAY') {
+                video.play();
+            } else if (data === 'PAUSE') {
+                video.pause();
+            }
+        };
+
+        // Keep Render server awake
+        setInterval(() => { if (ws.readyState === 1) ws.send('ping'); }, 30000);
+    </script>
+</body>
+</html>
